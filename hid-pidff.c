@@ -73,10 +73,6 @@ static const u8 pidff_set_effect[] = {
 	0x22, 0x50, 0x52, 0x53, 0x54, 0x56, 0xa7
 };
 
-static const u8 pidff_set_effect_without_delay[] = {
-	0x22, 0x50, 0x52, 0x53, 0x54, 0x56
-};
-
 #define PID_ATTACK_LEVEL	1
 #define PID_ATTACK_TIME		2
 #define PID_FADE_LEVEL		3
@@ -837,6 +833,7 @@ static int pidff_find_fields(struct pidff_usage *usage, const u8 *table,
 			     struct hid_report *report, int count, int strict)
 {
 	int i, j, k, found;
+	bool no_delay = false;
 
 	for (k = 0; k < count; k++) {
 		found = 0;
@@ -861,10 +858,18 @@ static int pidff_find_fields(struct pidff_usage *usage, const u8 *table,
 			if (found)
 				break;
 		}
-		if (!found && strict) {
+		if (!found && table[k] == pidff_set_effect[PID_START_DELAY]) {
+			pr_debug("Delay field not found, but that's ok.\n");
+			no_delay = true;
+		}
+		else if (!found && strict) {
 			pr_debug("failed to locate %d\n", k);
 			return -1;
 		}
+	}
+
+	if (no_delay) {
+		return 2;
 	}
 	return 0;
 }
@@ -1142,23 +1147,16 @@ static int pidff_init_fields(struct pidff_device *pidff, struct input_dev *dev)
 {
 	int envelope_ok = 0;
 
-	if (pidff->quirks & PIDFF_QUIRK_NO_DELAY_EFFECT) {
-		hid_dbg(pidff->hid, "Find fields for set_effect without delay\n");
-		if (pidff_find_fields(pidff->set_effect,
-					pidff_set_effect_without_delay,
-					pidff->reports[PID_SET_EFFECT], \
-					sizeof(pidff_set_effect_without_delay), 1)) {
-			hid_err(pidff->hid, "unknown set_effect report layout\n");
-			return -ENODEV;
-		}
+	hid_dbg(pidff->hid, "Find fields for set_effect without delay\n");
+	int find_fields = PIDFF_FIND_FIELDS(set_effect, PID_SET_EFFECT, 1)
+	if (find_fileds == 2) {
+		hid_dbg(pidff->hid, "set_effect replort layout without delay\n");
+		pidff->quirks |= PIDFF_QUIRK_NO_DELAY_EFFECT;
 	}
-	else {
-		if (PIDFF_FIND_FIELDS(set_effect, PID_SET_EFFECT, 1)) {
-			hid_err(pidff->hid, "unknown set_effect report layout\n");
-			return -ENODEV;
-		}
+	else if (find_fields) {
+		hid_err(pidff->hid, "unknown set_effect report layout\n");
+		return -ENODEV;
 	}
-
 
 	PIDFF_FIND_FIELDS(block_load, PID_BLOCK_LOAD, 0);
 	if (!pidff->block_load[PID_EFFECT_BLOCK_INDEX].value) {
