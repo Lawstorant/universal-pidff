@@ -1177,7 +1177,7 @@ static int pidff_find_special_fields(struct pidff_device *pidff)
 	if (!pidff->effect_direction) {
 		pidff->quirks |= HID_PIDFF_QUIRK_MISSING_DIRECTION;
 		hid_warn(pidff->hid, "%s %s", "direction field not found,",
-			"adding MISSING_DIRECTION quirk\n");
+			 "adding MISSING_DIRECTION quirk\n");
 	}
 
 	if (!pidff->device_control) {
