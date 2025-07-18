@@ -24,22 +24,24 @@
 #define FF_INFINITE		0
 
 /* Report usage table used to put reports into an array */
-#define PID_SET_EFFECT		0
-#define PID_EFFECT_OPERATION	1
-#define PID_DEVICE_GAIN		2
-#define PID_POOL		3
-#define PID_BLOCK_LOAD		4
-#define PID_BLOCK_FREE		5
-#define PID_DEVICE_CONTROL	6
-#define PID_CREATE_NEW_EFFECT	7
+enum pid_reports {
+	PID_SET_EFFECT,
+	PID_EFFECT_OPERATION,
+	PID_DEVICE_GAIN,
+	PID_POOL,
+	PID_BLOCK_LOAD,
+	PID_BLOCK_FREE,
+	PID_DEVICE_CONTROL,
+	PID_CREATE_NEW_EFFECT,
+	PID_REQUIRED_REPORTS,
 
-#define PID_REQUIRED_REPORTS	7
-
-#define PID_SET_ENVELOPE	8
-#define PID_SET_CONDITION	9
-#define PID_SET_PERIODIC	10
-#define PID_SET_CONSTANT	11
-#define PID_SET_RAMP		12
+	PID_SET_ENVELOPE = PID_REQUIRED_REPORTS,
+	PID_SET_CONDITION,
+	PID_SET_PERIODIC,
+	PID_SET_CONSTANT,
+	PID_SET_RAMP,
+	PID_REPORTS_COUNT
+};
 static const u8 pidff_reports[] = {
 	0x21, 0x77, 0x7d, 0x7f, 0x89, 0x90, 0x96, 0xab,
 	0x5a, 0x5f, 0x6e, 0x73, 0x74
@@ -50,54 +52,74 @@ static const u8 pidff_reports[] = {
  */
 
 /* PID special fields */
-#define PID_EFFECT_TYPE			0x25
-#define PID_DIRECTION			0x57
-#define PID_EFFECT_OPERATION_ARRAY	0x78
-#define PID_BLOCK_LOAD_STATUS		0x8b
-#define PID_DEVICE_CONTROL_ARRAY	0x96
+enum pid_special_fields {
+	PID_EFFECT_TYPE			= 0x25,
+	PID_DIRECTION			= 0x57,
+	PID_EFFECT_OPERATION_ARRAY	= 0x78,
+	PID_BLOCK_LOAD_STATUS		= 0x8b,
+	PID_DEVICE_CONTROL_ARRAY	= 0x96,
+};
 
 /* Value usage tables used to put fields and values into arrays */
 #define PID_EFFECT_BLOCK_INDEX	0
-
-#define PID_DURATION		1
-#define PID_GAIN		2
-#define PID_TRIGGER_BUTTON	3
-#define PID_TRIGGER_REPEAT_INT	4
-#define PID_DIRECTION_ENABLE	5
-#define PID_START_DELAY		6
+enum pid_set_effect {
+	PID_DURATION = 1,
+	PID_GAIN,
+	PID_TRIGGER_BUTTON,
+	PID_TRIGGER_REPEAT_INT,
+	PID_DIRECTION_ENABLE,
+	PID_START_DELAY,
+	PID_SET_EFFECT_COUNT
+};
 static const u8 pidff_set_effect[] = {
 	0x22, 0x50, 0x52, 0x53, 0x54, 0x56, 0xa7
 };
 
-#define PID_ATTACK_LEVEL	1
-#define PID_ATTACK_TIME		2
-#define PID_FADE_LEVEL		3
-#define PID_FADE_TIME		4
+enum pid_set_envelope {
+	PID_ATTACK_LEVEL = 1,
+	PID_ATTACK_TIME,
+	PID_FADE_LEVEL,
+	PID_FADE_TIME,
+	PID_SET_ENVELOPE_COUNT
+};
 static const u8 pidff_set_envelope[] = { 0x22, 0x5b, 0x5c, 0x5d, 0x5e };
 
-#define PID_PARAM_BLOCK_OFFSET	1
-#define PID_CP_OFFSET		2
-#define PID_POS_COEFFICIENT	3
-#define PID_NEG_COEFFICIENT	4
-#define PID_POS_SATURATION	5
-#define PID_NEG_SATURATION	6
-#define PID_DEAD_BAND		7
+enum pid_set_condition {
+	PID_PARAM_BLOCK_OFFSET = 1,
+	PID_CP_OFFSET,
+	PID_POS_COEFFICIENT,
+	PID_NEG_COEFFICIENT,
+	PID_POS_SATURATION,
+	PID_NEG_SATURATION,
+	PID_DEAD_BAND,
+	PID_SET_CONDITION_COUNT
+};
 static const u8 pidff_set_condition[] = {
 	0x22, 0x23, 0x60, 0x61, 0x62, 0x63, 0x64, 0x65
 };
 
-#define PID_MAGNITUDE		1
-#define PID_OFFSET		2
-#define PID_PHASE		3
-#define PID_PERIOD		4
+/* Magnitude is the same for constant */
+enum pid_set_periodic {
+	PID_MAGNITUDE = 1,
+	PID_OFFSET,
+	PID_PHASE,
+	PID_PERIOD,
+	PID_SET_PERIODIC_COUNT
+};
 static const u8 pidff_set_periodic[] = { 0x22, 0x70, 0x6f, 0x71, 0x72 };
+
+#define PID_SET_CONSTANT_COUNT PID_MAGNITUDE + 1
 static const u8 pidff_set_constant[] = { 0x22, 0x70 };
 
-#define PID_RAMP_START		1
-#define PID_RAMP_END		2
+enum pid_set_ramp {
+	PID_RAMP_START = 1,
+	PID_RAMP_END,
+	PID_SET_RAMP_COUNT
+};
 static const u8 pidff_set_ramp[] = { 0x22, 0x75, 0x76 };
 
 #define PID_RAM_POOL_AVAILABLE	1
+#define PID_BLOCK_LOAD_COUNT	PID_RAM_POOL_AVAILABLE + 1
 static const u8 pidff_block_load[] = { 0x22, 0xac };
 
 #define PID_LOOP_COUNT		1
@@ -114,33 +136,42 @@ static const u8 pidff_device_gain[] = { 0x7e };
 static const u8 pidff_pool[] = { 0x80, 0x83, 0xa9 };
 
 /* Special field key tables used to put special field keys into arrays */
-#define PID_ENABLE_ACTUATORS	0
-#define PID_DISABLE_ACTUATORS	1
-#define PID_STOP_ALL_EFFECTS	2
-#define PID_RESET		3
-#define PID_PAUSE		4
-#define PID_CONTINUE		5
+enum pid_device_control {
+	PID_ENABLE_ACTUATORS,
+	PID_DISABLE_ACTUATORS,
+	PID_STOP_ALL_EFFECTS,
+	PID_RESET,
+	PID_PAUSE,
+	PID_CONTINUE,
+	PID_DEVICE_CONTROL_COUNT
+};
 static const u8 pidff_device_control[] = { 0x97, 0x98, 0x99, 0x9a, 0x9b, 0x9c };
 
-#define PID_CONSTANT	0
-#define PID_RAMP	1
-#define PID_SQUARE	2
-#define PID_SINE	3
-#define PID_TRIANGLE	4
-#define PID_SAW_UP	5
-#define PID_SAW_DOWN	6
-#define PID_SPRING	7
-#define PID_DAMPER	8
-#define PID_INERTIA	9
-#define PID_FRICTION	10
+enum pid_effect_types {
+	PID_CONSTANT,
+	PID_RAMP,
+	PID_SQUARE,
+	PID_SINE,
+	PID_TRIANGLE,
+	PID_SAW_UP,
+	PID_SAW_DOWN,
+	PID_SPRING,
+	PID_DAMPER,
+	PID_INERTIA,
+	PID_FRICTION,
+	PID_EFFECT_TYPES_COUNT
+};
 static const u8 pidff_effect_types[] = {
 	0x26, 0x27, 0x30, 0x31, 0x32, 0x33, 0x34,
 	0x40, 0x41, 0x42, 0x43
 };
 
-#define PID_BLOCK_LOAD_SUCCESS	0
-#define PID_BLOCK_LOAD_FULL	1
-#define PID_BLOCK_LOAD_ERROR	2
+enum pid_block_load_status {
+	PID_BLOCK_LOAD_SUCCESS,
+	PID_BLOCK_LOAD_FULL,
+	PID_BLOCK_LOAD_ERROR,
+	PID_BLOCK_LOAD_STATUS_COUNT
+};
 static const u8 pidff_block_load_status[] = { 0x8c, 0x8d, 0x8e};
 
 #define PID_EFFECT_START	0
@@ -158,14 +189,14 @@ struct pidff_usage {
 struct pidff_device {
 	struct hid_device *hid;
 
-	struct hid_report *reports[sizeof(pidff_reports)];
+	struct hid_report *reports[PID_REPORTS_COUNT];
 
-	struct pidff_usage set_effect[sizeof(pidff_set_effect)];
-	struct pidff_usage set_envelope[sizeof(pidff_set_envelope)];
-	struct pidff_usage set_condition[sizeof(pidff_set_condition)];
-	struct pidff_usage set_periodic[sizeof(pidff_set_periodic)];
-	struct pidff_usage set_constant[sizeof(pidff_set_constant)];
-	struct pidff_usage set_ramp[sizeof(pidff_set_ramp)];
+	struct pidff_usage set_effect[PID_SET_EFFECT_COUNT];
+	struct pidff_usage set_envelope[PID_SET_ENVELOPE_COUNT];
+	struct pidff_usage set_condition[PID_SET_CONDITION_COUNT];
+	struct pidff_usage set_periodic[PID_SET_PERIODIC_COUNT];
+	struct pidff_usage set_constant[PID_SET_CONSTANT_COUNT];
+	struct pidff_usage set_ramp[PID_SET_RAMP_COUNT];
 
 	struct pidff_usage device_gain[sizeof(pidff_device_gain)];
 	struct pidff_usage block_load[sizeof(pidff_block_load)];
@@ -194,9 +225,9 @@ struct pidff_device {
 	/* Special field in effect_operation */
 	struct hid_field *effect_operation_status;
 
-	int control_id[sizeof(pidff_device_control)];
-	int type_id[sizeof(pidff_effect_types)];
-	int status_id[sizeof(pidff_block_load_status)];
+	int control_id[PID_DEVICE_CONTROL_COUNT];
+	int type_id[PID_EFFECT_TYPES_COUNT];
+	int status_id[PID_BLOCK_LOAD_COUNT];
 	int operation_id[sizeof(pidff_effect_operation_status)];
 
 	int pid_id[PID_EFFECTS_MAX];
@@ -593,7 +624,7 @@ static void pidff_set_device_control(struct pidff_device *pidff, int field)
 		hid_dbg(pidff->hid, "DEVICE_CONTROL is a bitmask\n");
 
 		/* Clear current bitmask */
-		for (i = 0; i < sizeof(pidff_device_control); i++) {
+		for (i = 0; i < PID_DEVICE_CONTROL_COUNT; i++) {
 			index = pidff->control_id[i];
 			if (index < 1)
 				continue;
@@ -1026,7 +1057,7 @@ static int pidff_check_usage(int usage)
 {
 	int i;
 
-	for (i = 0; i < sizeof(pidff_reports); i++)
+	for (i = 0; i < PID_REPORTS_COUNT; i++)
 		if (usage == (HID_UP_PID | pidff_reports[i]))
 			return i;
 
@@ -1083,7 +1114,7 @@ static int pidff_reports_ok(struct pidff_device *pidff)
 {
 	int i;
 
-	for (i = 0; i <= PID_REQUIRED_REPORTS; i++) {
+	for (i = 0; i < PID_REQUIRED_REPORTS; i++) {
 		if (!pidff->reports[i]) {
 			hid_dbg(pidff->hid, "%d missing\n", i);
 			return 0;
@@ -1210,10 +1241,8 @@ static int pidff_find_special_fields(struct pidff_device *pidff)
 	}
 
 	if (PIDFF_FIND_SPECIAL_KEYS(status_id, block_load_status,
-				    block_load_status) !=
-			sizeof(pidff_block_load_status)) {
-		hid_err(pidff->hid,
-			"block load status identifiers not found\n");
+				    block_load_status) != PID_BLOCK_LOAD_COUNT) {
+		hid_err(pidff->hid, "block load status identifiers not found\n");
 		return -1;
 	}
 
@@ -1235,7 +1264,7 @@ static int pidff_find_effects(struct pidff_device *pidff,
 {
 	int i;
 
-	for (i = 0; i < sizeof(pidff_effect_types); i++) {
+	for (i = 0; i < PID_EFFECT_TYPES_COUNT; i++) {
 		int pidff_type = pidff->type_id[i];
 
 		if (pidff->set_effect_type->usage[pidff_type].hid !=
