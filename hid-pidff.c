@@ -258,6 +258,11 @@ static int pidff_is_effect_conditional(struct ff_effect *effect)
 	       effect->type == FF_FRICTION;
 }
 
+static int pidff_is_pid_periodic(u8 index)
+{
+	return index >= PID_SQUARE && index <= PID_SAW_DOWN;
+}
+
 static int pidff_is_duration_infinite(u16 duration)
 {
 	return duration == FF_INFINITE || duration == PID_INFINITE;
@@ -1392,7 +1397,7 @@ static int pidff_find_effects(struct pidff_device *pidff, struct input_dev *dev)
 			goto find_effects_err;
 
 		set_bit(pidff_effect_pid_to_ff[i], dev->ffbit);
-		if (i >= PID_SQUARE && i <= PID_SAW_DOWN)
+		if (pidff_is_pid_periodic(i))
 			set_bit(FF_PERIODIC, dev->ffbit);
 	}
 
