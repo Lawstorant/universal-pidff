@@ -140,6 +140,11 @@ static const u8 pidff_effect_types[] = {
 	0x40, 0x41, 0x42, 0x43
 };
 
+static const u8 pidff_effect_pid_to_ff[] = {
+	FF_CONSTANT, FF_RAMP, FF_SQUARE, FF_SINE, FF_TRIANGLE, FF_SAW_UP,
+	FF_SAW_DOWN, FF_SPRING, FF_DAMPER, FF_INERTIA, FF_FRICTION
+};
+
 #define PID_BLOCK_LOAD_SUCCESS	0
 #define PID_BLOCK_LOAD_FULL	1
 #define PID_BLOCK_LOAD_ERROR	2
@@ -1368,56 +1373,34 @@ static int pidff_find_special_fields(struct pidff_device *pidff)
 /*
  * Find the implemented effect types
  */
-static int pidff_find_effects(struct pidff_device *pidff,
-			      struct input_dev *dev)
+static int pidff_find_effects(struct pidff_device *pidff, struct input_dev *dev)
 {
-	int i;
+	struct hid_filed *ste = pidff->set_effect_type;
+	struct hid_field *cte = pidff->create_new_effect_type;
 
-	for (i = 0; i < ARRAY_SIZE(pidff_effect_types); i++) {
-		int pidff_type = pidff->type_id[i];
+	for (int i = 0; i < ARRAY_SIZE(pidff_effect_types); i++) {
+		/* 1-based HID indexing */
+		int id = pidff->type_id[i];
 
-		if (pidff->set_effect_type->usage[pidff_type].hid !=
-		    pidff->create_new_effect_type->usage[pidff_type].hid) {
-			hid_err(pidff->hid,
-				"effect type number %d is invalid\n", i);
-			return -1;
-		}
-	}
+		if (!id)
+			continue;
 
-	if (pidff->type_id[PID_CONSTANT])
-		set_bit(FF_CONSTANT, dev->ffbit);
-	if (pidff->type_id[PID_RAMP])
-		set_bit(FF_RAMP, dev->ffbit);
-	if (pidff->type_id[PID_SQUARE]) {
-		set_bit(FF_SQUARE, dev->ffbit);
-		set_bit(FF_PERIODIC, dev->ffbit);
+		if (id > ste->maxusage || id > cte->maxusage)
+			goto find_effects_err;
+
+		if (ste->usage[id - 1].hid != cte->usage[id - 1].hid)
+			goto find_effects_err;
+
+		set_bit(pidff_effect_pid_to_ff[i], dev->ffbit);
+		if (i >= PID_SQUARE && i <= PID_SAW_DOWN)
+			set_bit(FF_PERIODIC, dev->ffbit);
 	}
-	if (pidff->type_id[PID_SINE]) {
-		set_bit(FF_SINE, dev->ffbit);
-		set_bit(FF_PERIODIC, dev->ffbit);
-	}
-	if (pidff->type_id[PID_TRIANGLE]) {
-		set_bit(FF_TRIANGLE, dev->ffbit);
-		set_bit(FF_PERIODIC, dev->ffbit);
-	}
-	if (pidff->type_id[PID_SAW_UP]) {
-		set_bit(FF_SAW_UP, dev->ffbit);
-		set_bit(FF_PERIODIC, dev->ffbit);
-	}
-	if (pidff->type_id[PID_SAW_DOWN]) {
-		set_bit(FF_SAW_DOWN, dev->ffbit);
-		set_bit(FF_PERIODIC, dev->ffbit);
-	}
-	if (pidff->type_id[PID_SPRING])
-		set_bit(FF_SPRING, dev->ffbit);
-	if (pidff->type_id[PID_DAMPER])
-		set_bit(FF_DAMPER, dev->ffbit);
-	if (pidff->type_id[PID_INERTIA])
-		set_bit(FF_INERTIA, dev->ffbit);
-	if (pidff->type_id[PID_FRICTION])
-		set_bit(FF_FRICTION, dev->ffbit);
 
 	return 0;
+
+find_effects_err:
+	hid_err(pidff->hid, "malformed effect types in device descriptor\n");
+	return -1;
 }
 
 #define PIDFF_FIND_FIELDS(name, report, strict) \
