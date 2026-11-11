@@ -255,6 +255,7 @@ struct pidff_device {
 #define PIDFF_QUIRK(quirk) (pidff->quirks & HID_PIDFF_QUIRK_ ## quirk)
 
 /* Effect helpers */
+
 static uint pidff_get_effect_cnt(struct pidff_device *pidff)
 {
 	return pidff->effect_count;
@@ -295,6 +296,7 @@ static void pidff_reset_effect_cnt(struct pidff_device *pidff)
 }
 
 /* HID helpers */
+
 static void pidff_hw_request(struct pidff_device *pidff, u8 report, bool wait,
 			     enum hid_class_request request)
 {
@@ -314,6 +316,7 @@ static void pidff_hw_get(struct pidff_device *pidff, u8 report, bool wait)
 }
 
 /* PID helpers */
+
 static bool pidff_is_effect_conditional(struct ff_effect *effect)
 {
 	return effect->type == FF_SPRING  ||
